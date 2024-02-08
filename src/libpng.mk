@@ -30,5 +30,5 @@ define $(PKG)_BUILD
     '$(TARGET)-gcc' \
         -W -Wall -Werror -std=c99 -pedantic \
         '$(TEST_FILE)' -o '$(PREFIX)/$(TARGET)/bin/test-libpng.exe' \
-        `'$(PREFIX)/$(TARGET)/bin/libpng-config' --static --cflags --libs`
+        -L`'$(PREFIX)/$(TARGET)/bin/libpng-config' --libdir --cflags --libs`
 endef

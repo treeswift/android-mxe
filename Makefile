@@ -8,11 +8,11 @@ EXT_DIR  := $(TOP_DIR)/ext
 # See docs/gmsl.html for further information
 include $(EXT_DIR)/gmsl
 
-MXE_TRIPLETS       := i686-w64-mingw32 x86_64-w64-mingw32
+MXE_TRIPLETS       := aarch64-linux-android
 MXE_LIB_TYPES      := static shared
 MXE_TARGET_LIST    := $(strip $(foreach TRIPLET,$(MXE_TRIPLETS),\
                           $(addprefix $(TRIPLET).,$(MXE_LIB_TYPES))))
-MXE_TARGETS        := i686-w64-mingw32.static
+MXE_TARGETS        := aarch64-linux-android
 .DEFAULT_GOAL      := all-filtered
 
 DEFAULT_MAX_JOBS   := 6
@@ -622,7 +622,7 @@ CHOP_TARGETS = \
 
 $(foreach TARGET,$(MXE_TARGETS),\
     $(call CHOP_TARGETS,$(TARGET))\
-    $(eval $(TARGET)_UC_LIB_TYPE := $(if $(findstring shared,$(TARGET)),SHARED,STATIC)))
+    $(eval $(TARGET)_UC_LIB_TYPE := $(if $(findstring static,$(TARGET)),STATIC,SHARED)))
 
 # finds a package rule defintion
 RULE_TYPES := BUILD DEPS FILE MESSAGE OO_DEPS URL
@@ -827,10 +827,10 @@ $(PREFIX)/$(3)/installed/$(1): $(PKG_MAKEFILES) \
 # https://www.gnu.org/software/make/manual/html_node/Target_002dspecific.html
 build-only-$(1)_$(3): PKG = $(1)
 build-only-$(1)_$(3): TARGET = $(3)
-build-only-$(1)_$(3): BUILD_$(if $(findstring shared,$(3)),SHARED,STATIC) = TRUE
+build-only-$(1)_$(3): BUILD_$(if $(findstring static,$(3)),STATIC,SHARED) = TRUE
 build-only-$(1)_$(3): BUILD_$(if $(call seq,$(TARGET),$(BUILD)),NATIVE,CROSS) = TRUE
 build-only-$(1)_$(3): $(if $(findstring win32,$(TARGET)),WIN32,POSIX)_THREADS = TRUE
-build-only-$(1)_$(3): LIB_SUFFIX = $(if $(findstring shared,$(3)),dll,a)
+build-only-$(1)_$(3): LIB_SUFFIX = $(if $(findstring static,$(3)),a,so)
 build-only-$(1)_$(3): BITS = $(if $(findstring x86_64,$(3)),64,32)
 build-only-$(1)_$(3): PROCESSOR = $(firstword $(call split,-,$(3)))
 build-only-$(1)_$(3): BUILD_TYPE = $(if $(findstring debug,$(3) $($(1)_CONFIGURE_OPTS)),debug,release)
@@ -843,8 +843,8 @@ build-only-$(1)_$(3): TEST_FILE  = $($(1)_TEST_FILE)
 build-only-$(1)_$(3): CMAKE_RUNRESULT_FILE = $(PREFIX)/share/cmake/modules/TryRunResults.cmake
 build-only-$(1)_$(3): CMAKE_TOOLCHAIN_FILE = $(PREFIX)/$(3)/share/cmake/mxe-conf.cmake
 build-only-$(1)_$(3): CMAKE_TOOLCHAIN_DIR  = $(PREFIX)/$(3)/share/cmake/mxe-conf.d
-build-only-$(1)_$(3): CMAKE_STATIC_BOOL = $(if $(findstring shared,$(3)),OFF,ON)
-build-only-$(1)_$(3): CMAKE_SHARED_BOOL = $(if $(findstring shared,$(3)),ON,OFF)
+build-only-$(1)_$(3): CMAKE_STATIC_BOOL = $(if $(findstring static,$(3)),ON,OFF)
+build-only-$(1)_$(3): CMAKE_SHARED_BOOL = $(if $(findstring static,$(3)),OFF,ON)
 build-only-$(1)_$(3):
 	$(if $(value $(call LOOKUP_PKG_RULE,$(1),BUILD,$(3))),
 	    uname -a
